@@ -27,3 +27,36 @@ popd
 
 IPVSADM_BASE="./ipvsadm/ipvsadm-base"
 IPVSADM_PATCHED="./ipvsadm/ipvsadm-patched"
+HYPERFINE=$(echo ./hyperfine/*/hyperfine)
+
+if [[ ! -f $HYPERFINE ]]; then
+    mkdir -p hyperfine
+    pushd hyperfine
+    curl -L -o hyperfine.tgz https://github.com/sharkdp/hyperfine/releases/download/v1.11.0/hyperfine-v1.11.0-x86_64-unknown-linux-gnu.tar.gz
+    tar -zxf ./hyperfine.tgz
+    popd
+    HYPERFINE=$(echo ./hyperfine/*/hyperfine)
+fi
+
+function jitter {
+    sleep $(bc <<< "$RANDOM%10 * 0.0001")
+}
+
+function setup {
+    local nsvcs=$1
+    local ndsts=$2
+
+    dstport=10000
+
+    sudo $IPVSADM_PATCHED -C
+
+    for ((i=0;i<$nsvcs;i++)); do
+        svcport=$((30000+$i))
+        sudo $IPVSADM_PATCHED -A -t 10.0.0.1:$svcport -s rr
+
+        for ((j=0;j<$ndsts;j++)); do
+            sudo $IPVSADM_PATCHED -a -t 10.0.0.1:$svcport -r 10.0.0.1:$dstport -m
+            dstport=$((${dstport}+1))
+        done
+    done
+}

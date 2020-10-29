@@ -4,29 +4,6 @@ set -eo pipefail
 
 . install.sh
 
-function jitter {
-    sleep $(bc <<< "$RANDOM%10 * 0.0001")
-}
-
-function setup {
-    local nsvcs=$1
-    local ndsts=$2
-
-    dstport=10000
-
-    sudo $IPVSADM_PATCHED -C
-
-    for ((i=0;i<$nsvcs;i++)); do
-        svcport=$((30000+$i))
-        sudo $IPVSADM_PATCHED -A -t 10.0.0.1:$svcport -s rr
-
-        for ((j=0;j<$ndsts;j++)); do
-            sudo $IPVSADM_PATCHED -a -t 10.0.0.1:$svcport -r 10.0.0.1:$dstport -m
-            dstport=$((${dstport}+1))
-        done
-    done
-}
-
 function test_diff_base_vs_patched {
     setup 100 4
 
@@ -150,7 +127,7 @@ function test_add_service_while_dump {
     echo "Passed ${FUNCNAME[0]}"
 }
 
-echo; echo '**** STARTING TESTS ***'; echo
+echo; echo '**** STARTING TESTS ****'; echo
 
 test_diff_base_vs_patched
 test_add_destination_while_dump
