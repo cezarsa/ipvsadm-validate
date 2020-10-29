@@ -2,6 +2,11 @@
 
 Tests and benchmarks for a patched kernel with a patched ipvsadm
 
+Tested code:
+
+* kernel from https://github.com/cezarsa/linux/tree/ipvs-dump-all
+* ipvsadm from https://github.com/cezarsa/ipvsadm/tree/dump-svc-ds
+
 # Requirements
 
 Kernel must be patched with `ipvs-dump-all` branch from https://github.com/torvalds/linux/compare/master...cezarsa:ipvs-dump-all
