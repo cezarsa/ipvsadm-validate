@@ -110,7 +110,7 @@ function test_remove_service_while_dump {
         wait
         
         set +e
-        result=$(diff -u old.txt new-patched.txt)
+        result=$(diff -u old.txt new.txt)
         set -e
 
         if tail -n +4 <<<${result} | grep '^+' >/dev/null; then
@@ -126,9 +126,34 @@ function test_remove_service_while_dump {
     echo "Passed ${FUNCNAME[0]}"
 }
 
+function test_add_service_while_dump {
+    setup 500 2
+
+    sudo $IPVSADM_PATCHED -Ln >./old.txt
+    for ((i=0;i<200;i++)); do
+        (jitter; sudo $IPVSADM_PATCHED -A -t 10.0.0.1:31000 -s rr) &
+        (jitter; sudo $IPVSADM_PATCHED -Ln >./new.txt) &
+        wait
+        
+        set +e
+        result=$(diff -u old.txt new.txt)
+        set -e
+
+        if tail -n +4 <<<${result} | grep '^-' >/dev/null; then
+            echo "Unexpected diff: Expected no removed lines, got: \"${result}\""
+            exit 1
+        fi
+
+        sudo $IPVSADM_PATCHED -D -t 10.0.0.1:31000
+    done
+
+    echo "Passed ${FUNCNAME[0]}"
+}
+
 echo; echo '**** STARTING TESTS ***'; echo
 
 test_diff_base_vs_patched
 test_add_destination_while_dump
 test_remove_destination_while_dump
+test_add_service_while_dump
 test_remove_service_while_dump
