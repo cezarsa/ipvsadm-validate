@@ -56,6 +56,19 @@ Summary
   './ipvsadm/ipvsadm-patched -Sn' ran
     2.12 ± 0.04 times faster than './ipvsadm/ipvsadm-base -Sn'
 
+**** BENCHMARK 16000 services - 1 destinations each ****
+Benchmark #1: ./ipvsadm/ipvsadm-base -Sn
+  Time (mean ± σ):     406.3 ms ±   6.7 ms    [User: 97.5 ms, System: 304.3 ms]
+  Range (min … max):   396.4 ms … 414.6 ms    10 runs
+
+Benchmark #2: ./ipvsadm/ipvsadm-patched -Sn
+  Time (mean ± σ):     186.5 ms ±   5.1 ms    [User: 29.9 ms, System: 156.3 ms]
+  Range (min … max):   179.3 ms … 195.3 ms    16 runs
+
+Summary
+  './ipvsadm/ipvsadm-patched -Sn' ran
+    2.18 ± 0.07 times faster than './ipvsadm/ipvsadm-base -Sn'
+
 **** BENCHMARK 100 services - 100 destinations each ****
 Benchmark #1: ./ipvsadm/ipvsadm-base -Sn
   Time (mean ± σ):      21.0 ms ±   0.3 ms    [User: 9.0 ms, System: 12.0 ms]
