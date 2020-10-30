@@ -3,7 +3,7 @@
 all: test bench
 
 test:
-	./test.sh
+	sudo ./test.sh
 
 bench:
-	./bench.sh
+	sudo ./bench.sh

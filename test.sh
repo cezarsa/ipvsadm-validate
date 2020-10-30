@@ -4,22 +4,23 @@ set -eo pipefail
 
 . install.sh
 
-function test_diff_base_vs_patched {
+test_diff_base_vs_patched() {
     setup 100 4
 
-    diff -u <(sudo $IPVSADM_BASE -Ln) <(sudo $IPVSADM_PATCHED -Ln)
-    diff -u <(sudo $IPVSADM_BASE -Ln --nosort) <(sudo $IPVSADM_PATCHED -Ln --nosort)
+    diff -u <($IPVSADM_BASE -Ln) <($IPVSADM_PATCHED -Ln)
+    diff -u <($IPVSADM_BASE -Ln --nosort) <($IPVSADM_PATCHED -Ln --nosort)
+    diff -u <($IPVSADM_BASE -Sn) <($IPVSADM_PATCHED -Sn)
 
     echo "Passed ${FUNCNAME[0]}"
 }
 
-function test_add_destination_while_dump {
+test_add_destination_while_dump() {
     setup 500 2
 
-    sudo $IPVSADM_PATCHED -Ln >./old.txt
+    $IPVSADM_PATCHED -Ln >./old.txt
     for ((i=0;i<100;i++)); do
-        (jitter; sudo $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:40000 -m) &
-        (jitter; sudo $IPVSADM_PATCHED -Ln >./new.txt) &
+        (jitter; $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:40000 -m) &
+        (jitter; $IPVSADM_PATCHED -Ln >./new.txt) &
         wait
         
         set +e
@@ -39,19 +40,19 @@ EOF
            exit 1
         fi
 
-        sudo $IPVSADM_PATCHED -d -t 10.0.0.1:30001 -r 10.0.0.1:40000
+        $IPVSADM_PATCHED -d -t 10.0.0.1:30001 -r 10.0.0.1:40000
     done
 
     echo "Passed ${FUNCNAME[0]}"
 }
 
-function test_remove_destination_while_dump {
+test_remove_destination_while_dump() {
     setup 100 5
 
-    sudo $IPVSADM_PATCHED -Ln >./old.txt
+    $IPVSADM_PATCHED -Ln >./old.txt
     for ((i=0;i<100;i++)); do
-        (jitter; sudo $IPVSADM_PATCHED -d -t 10.0.0.1:30000 -r 10.0.0.1:10003) &
-        (jitter; sudo $IPVSADM_PATCHED -Ln >./new.txt) &
+        (jitter; $IPVSADM_PATCHED -d -t 10.0.0.1:30000 -r 10.0.0.1:10003) &
+        (jitter; $IPVSADM_PATCHED -Ln >./new.txt) &
         wait
         
         set +e
@@ -71,19 +72,19 @@ EOF
            exit 1
         fi
 
-        sudo $IPVSADM_PATCHED -a -t 10.0.0.1:30000 -r 10.0.0.1:10003 -m
+        $IPVSADM_PATCHED -a -t 10.0.0.1:30000 -r 10.0.0.1:10003 -m
     done
 
     echo "Passed ${FUNCNAME[0]}"
 }
 
-function test_remove_service_while_dump {
+test_remove_service_while_dump() {
     setup 500 2
 
-    sudo $IPVSADM_PATCHED -Ln >./old.txt
+    $IPVSADM_PATCHED -Ln >./old.txt
     for ((i=0;i<200;i++)); do
-        (jitter; sudo $IPVSADM_PATCHED -D -t 10.0.0.1:30001) &
-        (jitter; sudo $IPVSADM_PATCHED -Ln >./new.txt) &
+        (jitter; $IPVSADM_PATCHED -D -t 10.0.0.1:30001) &
+        (jitter; $IPVSADM_PATCHED -Ln >./new.txt) &
         wait
         
         set +e
@@ -95,21 +96,21 @@ function test_remove_service_while_dump {
             exit 1
         fi
 
-        sudo $IPVSADM_PATCHED -A -t 10.0.0.1:30001 -s rr
-        sudo $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:10002 -m
-        sudo $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:10003 -m
+        $IPVSADM_PATCHED -A -t 10.0.0.1:30001 -s rr
+        $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:10002 -m
+        $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:10003 -m
     done
 
     echo "Passed ${FUNCNAME[0]}"
 }
 
-function test_add_service_while_dump {
+test_add_service_while_dump() {
     setup 500 2
 
-    sudo $IPVSADM_PATCHED -Ln >./old.txt
+    $IPVSADM_PATCHED -Ln >./old.txt
     for ((i=0;i<200;i++)); do
-        (jitter; sudo $IPVSADM_PATCHED -A -t 10.0.0.1:31000 -s rr) &
-        (jitter; sudo $IPVSADM_PATCHED -Ln >./new.txt) &
+        (jitter; $IPVSADM_PATCHED -A -t 10.0.0.1:31000 -s rr) &
+        (jitter; $IPVSADM_PATCHED -Ln >./new.txt) &
         wait
         
         set +e
@@ -121,7 +122,7 @@ function test_add_service_while_dump {
             exit 1
         fi
 
-        sudo $IPVSADM_PATCHED -D -t 10.0.0.1:31000
+        $IPVSADM_PATCHED -D -t 10.0.0.1:31000
     done
 
     echo "Passed ${FUNCNAME[0]}"

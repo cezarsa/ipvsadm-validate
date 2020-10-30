@@ -38,24 +38,24 @@ if [[ ! -f $HYPERFINE ]]; then
     HYPERFINE=$(echo ./hyperfine/*/hyperfine)
 fi
 
-function jitter {
+jitter() {
     sleep $(bc <<< "$RANDOM%10 * 0.0001")
 }
 
-function setup {
+setup() {
     local nsvcs=$1
     local ndsts=$2
 
     dstport=10000
 
-    sudo $IPVSADM_PATCHED -C
+    $IPVSADM_PATCHED -C
 
     for ((i=0;i<$nsvcs;i++)); do
         svcport=$((30000+$i))
-        sudo $IPVSADM_PATCHED -A -t 10.0.0.1:$svcport -s rr
+        $IPVSADM_PATCHED -A -t 10.0.0.1:$svcport -s rr
 
         for ((j=0;j<$ndsts;j++)); do
-            sudo $IPVSADM_PATCHED -a -t 10.0.0.1:$svcport -r 10.0.0.1:$dstport -m
+            $IPVSADM_PATCHED -a -t 10.0.0.1:$svcport -r 10.0.0.1:$dstport -m
             dstport=$((${dstport}+1))
         done
     done
