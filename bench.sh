@@ -8,7 +8,7 @@ run_bench() {
     ndsts=$2
     echo; echo "**** BENCHMARK ${nsvcs} services - ${ndsts} destinations each ****"
     setup $nsvcs $ndsts
-    sudo $HYPERFINE --warmup 6 \
+    $HYPERFINE --warmup 6 \
         -L ipvsadm $IPVSADM_BASE,$IPVSADM_PATCHED \
         "{ipvsadm} -Sn"
 }
