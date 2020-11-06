@@ -11,6 +11,30 @@ test_diff_base_vs_patched() {
     diff -u <($IPVSADM_BASE -Ln --nosort) <($IPVSADM_PATCHED -Ln --nosort)
     diff -u <($IPVSADM_BASE -Sn) <($IPVSADM_PATCHED -Sn)
 
+    setup 10 100
+
+    diff -u <($IPVSADM_BASE -Ln) <($IPVSADM_PATCHED -Ln)
+    diff -u <($IPVSADM_BASE -Ln --nosort) <($IPVSADM_PATCHED -Ln --nosort)
+    diff -u <($IPVSADM_BASE -Sn) <($IPVSADM_PATCHED -Sn)
+
+    setupfw 100 4 keep
+
+    diff -u <($IPVSADM_BASE -Ln) <($IPVSADM_PATCHED -Ln)
+    diff -u <($IPVSADM_BASE -Ln --nosort) <($IPVSADM_PATCHED -Ln --nosort)
+    diff -u <($IPVSADM_BASE -Sn) <($IPVSADM_PATCHED -Sn)
+
+    setupfw 100 4
+
+    diff -u <($IPVSADM_BASE -Ln) <($IPVSADM_PATCHED -Ln)
+    diff -u <($IPVSADM_BASE -Ln --nosort) <($IPVSADM_PATCHED -Ln --nosort)
+    diff -u <($IPVSADM_BASE -Sn) <($IPVSADM_PATCHED -Sn)
+
+    setupfw 10 100
+
+    diff -u <($IPVSADM_BASE -Ln) <($IPVSADM_PATCHED -Ln)
+    diff -u <($IPVSADM_BASE -Ln --nosort) <($IPVSADM_PATCHED -Ln --nosort)
+    diff -u <($IPVSADM_BASE -Sn) <($IPVSADM_PATCHED -Sn)
+
     echo "Passed ${FUNCNAME[0]}"
 }
 
@@ -79,7 +103,9 @@ EOF
 }
 
 test_remove_service_while_dump() {
-    setup 500 2
+    local nsvcs=$1
+    local ndests=$2
+    setup $nsvcs $ndests
 
     $IPVSADM_PATCHED -Ln >./old.txt
     for ((i=0;i<200;i++)); do
@@ -97,11 +123,12 @@ test_remove_service_while_dump() {
         fi
 
         $IPVSADM_PATCHED -A -t 10.0.0.1:30001 -s rr
-        $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:10002 -m
-        $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:10003 -m
+        for ((j=0;j<$ndests;j++)); do
+            $IPVSADM_PATCHED -a -t 10.0.0.1:30001 -r 10.0.0.1:$((${ndests}+${j}+10000)) -m
+        done
     done
 
-    echo "Passed ${FUNCNAME[0]}"
+    echo "Passed ${FUNCNAME[0]} ${nsvcs} ${ndests}"
 }
 
 test_add_service_while_dump() {
@@ -134,4 +161,5 @@ test_diff_base_vs_patched
 test_add_destination_while_dump
 test_remove_destination_while_dump
 test_add_service_while_dump
-test_remove_service_while_dump
+test_remove_service_while_dump 500 2
+test_remove_service_while_dump 5 100

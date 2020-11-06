@@ -8,7 +8,7 @@ if [[ ! -d ipvsadm/base ]]; then
     pushd ipvsadm
     git clone git://git.kernel.org/pub/scm/utils/kernel/ipvsadm/ipvsadm.git base
     pushd base
-    git remote add cezarsa git@github.com:cezarsa/ipvsadm.git
+    git remote add cezarsa https://github.com/cezarsa/ipvsadm.git
     git fetch -a cezarsa
     git worktree add ../patched cezarsa/dump-svc-ds
     popd
@@ -26,7 +26,7 @@ cp ipvsadm ../ipvsadm-patched
 popd
 
 IPVSADM_BASE="./ipvsadm/ipvsadm-base"
-IPVSADM_PATCHED="./ipvsadm/ipvsadm-patched"
+IPVSADM_PATCHED=${IPVSADM_PATCHED:-"./ipvsadm/ipvsadm-patched"}
 HYPERFINE=$(echo ./hyperfine/*/hyperfine)
 
 if [[ ! -f $HYPERFINE ]]; then
@@ -39,7 +39,7 @@ if [[ ! -f $HYPERFINE ]]; then
 fi
 
 jitter() {
-    sleep $(bc <<< "$RANDOM%10 * 0.0001")
+    sleep $(bc <<< "$RANDOM%10 * 0.001")
 }
 
 setup() {
@@ -56,6 +56,26 @@ setup() {
 
         for ((j=0;j<$ndsts;j++)); do
             $IPVSADM_PATCHED -a -t 10.0.0.1:$svcport -r 10.0.0.1:$dstport -m
+            dstport=$((${dstport}+1))
+        done
+    done
+}
+
+setupfw() {
+    local nsvcs=$1
+    local ndsts=$2
+
+    dstport=10000
+
+    if [[ $3 != "keep" ]]; then
+        $IPVSADM_PATCHED -C
+    fi
+
+    for ((i=0;i<$nsvcs;i++)); do
+        $IPVSADM_PATCHED -A -f $((1+$i)) -s rr
+
+        for ((j=0;j<$ndsts;j++)); do
+            $IPVSADM_PATCHED -a -f $((1+$i)) -r 10.0.0.1:$dstport -m
             dstport=$((${dstport}+1))
         done
     done
